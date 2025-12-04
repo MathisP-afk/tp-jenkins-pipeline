@@ -22,4 +22,4 @@ docker stop samplerunning || true
 docker rm samplerunning || true
 
 docker run -t -d -p 8080:8080 --name samplerunning sampleapp
-docker ps -aje pe
+docker ps -a
