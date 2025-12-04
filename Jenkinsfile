@@ -1,33 +1,72 @@
 pipeline {
-    // On cible ton worker Linux
     agent { label 'linux' } 
 
     stages {
-        stage('Build & Install') {
+        stage('Nettoyage Workspace') {
             steps {
-                echo '--- Récupération du code depuis GitHub ---'
-                sh 'echo "Je suis le Worker : $(hostname)"'
-                sh 'echo "Démarrage du build..."'
+                // On s'assure de travailler proprement
+                cleanWs()
             }
         }
-        stage('Tests Unitaires') {
+        stage('Récupération Code') {
             steps {
-                echo '--- Exécution des tests ---'
+                // Jenkins le fait auto avec "Pipeline from SCM", 
+                // mais on s'assure d'avoir la dernière version
+                checkout scm
+            }
+        }
+        stage('Lancement Script TP') {
+            steps {
+                // C'est ICI que la magie du TP opère
+                // Le script va construire l'image et lancer le conteneur
+                sh 'chmod +x sample-app.sh'
+                sh 'bash ./sample-app.sh'
+            }
+        }
+        stage('Vérification (Test)') {
+            steps {
+                // On attend que le conteneur démarre
+                sleep 5
                 script {
-                    def date = sh(returnStdout: true, script: 'date').trim()
-                    echo "Test lancé le : ${date}"
-                    if (date.contains('2025')) {
-                        echo "Succès : Année 2025 validée."
-                    } else {
-                        error "Erreur : Mauvaise année."
-                    }
+                    // On teste si l'app répond sur le port 5050
+                    sh 'curl -v http://localhost:5050'
                 }
             }
         }
-        stage('Deploy') {
+    }
+}pipeline {
+    agent { label 'linux' } 
+
+    stages {
+        stage('Nettoyage Workspace') {
             steps {
-                echo '--- Déploiement ---'
-                sh 'echo "Déploiement fictif terminé avec succès !"'
+                // On s'assure de travailler proprement
+                cleanWs()
+            }
+        }
+        stage('Récupération Code') {
+            steps {
+                // Jenkins le fait auto avec "Pipeline from SCM", 
+                // mais on s'assure d'avoir la dernière version
+                checkout scm
+            }
+        }
+        stage('Lancement Script TP') {
+            steps {
+                // C'est ICI que la magie du TP opère
+                // Le script va construire l'image et lancer le conteneur
+                sh 'chmod +x sample-app.sh'
+                sh 'bash ./sample-app.sh'
+            }
+        }
+        stage('Vérification (Test)') {
+            steps {
+                // On attend que le conteneur démarre
+                sleep 5
+                script {
+                    // On teste si l'app répond sur le port 5050
+                    sh 'curl -v http://localhost:5050'
+                }
             }
         }
     }
